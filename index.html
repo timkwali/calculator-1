@@ -5,27 +5,33 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" media="screen" href="reset.css">
   <link rel="stylesheet" type="text/css" media="screen" href="style.css">
-  <script src="main.js"></script>
 </head>
 <body>
   <main class="calculator">
-    <div id="0" class="num key">0</div>
-    <div id="1" class="num key">1</div>
-    <div id="2" class="num key">2</div>
-    <div id="3" class="num key">3</div>
-    <div id="4" class="num key">4</div>
-    <div id="5" class="num key">5</div>
-    <div id="6" class="num key">6</div>
-    <div id="7" class="num key">7</div>
-    <div id="8" class="num key">8</div>
-    <div id="9" class="num key">9</div>
-    <div id="sum" class="op key">+</div>
-    <div id="sub" class="op key">-</div>
-    <div id="mul" class="op key">×</div>
-    <div id="div" class="op key">÷</div>
-    <div id="eq" class="op key">=</div>
-    <div id="clear" class="op key">clear</div>
+    <div class="display">
+      <p class="screen">0</p>
+    </div>
+    <div class="keyboard">
+      <button id="0" class="num key" data-key='0'>0</button>
+      <button id="1" class="num key" data-key='1'>1</button>
+      <button id="2" class="num key" data-key='2'>2</button>
+      <button id="3" class="num key" data-key='3'>3</button>
+      <button id="4" class="num key" data-key='4'>4</button>
+      <button id="5" class="num key" data-key='5'>5</button>
+      <button id="6" class="num key" data-key='6'>6</button>
+      <button id="7" class="num key" data-key='7'>7</button>
+      <button id="8" class="num key" data-key='8'>8</button>
+      <button id="9" class="num key" data-key='9'>9</button>
+      <button id="sum" class="op key">+</button>
+      <button id="sub" class="op key">-</button>
+      <button id="mul" class="op key">×</button>
+      <button id="button" class="op key">÷</button>
+      <button id="eq" class="op key">=</button>
+      <button id="clear" class="op key">clear</button>
+    </div>
   </main>
+  <script src="main.js"></script>
 </body>
 </html>
