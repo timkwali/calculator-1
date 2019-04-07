@@ -6,7 +6,6 @@ const funcKeys = [...document.querySelectorAll('.op')];
 const screen = document.querySelector('.screen');
 
 addNumberListeners();
-updateScreen();
 
 function addNumberListeners() {
   numberKeys.forEach(key => {
