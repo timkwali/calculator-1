@@ -3,7 +3,8 @@
 const numberKeys = [...document.querySelectorAll('.num')]
 const funcKeys = [...document.querySelectorAll('.op')];
 const brackets = [...document.querySelectorAll('.bracket')];
-const screen = document.querySelector('.screen');
+const screen = document.querySelector('.main-display');
+const opDisplay = document.querySelector('.operations-display');
 const equal = document.querySelector('#eq');
 const clear = document.querySelector('#c');
 const clearAll = document.querySelector('#ac');
@@ -14,12 +15,16 @@ let stack = createStack();
 let needArg = true;
 let isNewArg = true;
 
-addNumberListeners();
-addFuncListeners();
-addBracketListeners();
-addEqListeners();
-addKeyboardShortcuts();
-addClearListeners();
+addListeners();
+
+function addListeners() {
+  addNumberListeners();
+  addFuncListeners();
+  addBracketListeners();
+  addEqListeners();
+  addKeyboardShortcuts();
+  addClearListeners();
+}
 
 function addClearListeners() {
   onClick(clear, () => clean());
@@ -86,8 +91,8 @@ function square(n) {
 }
 
 function operate(op) {
-  display = parseOp(op).length == 1 ? parseOp(op)(+display)
-    : stack.execute(stack.insert(op, +display));
+  display = parseOp(op).length == 1 ? parseOp(op)(+display) :
+    stack.execute(stack.insert(op, +display));
 
   isNewArg = true;
   updateScreen();
@@ -138,13 +143,15 @@ function onClick(elem, func) {
 
 function createStack() {
   return {
-    contexts: [[]],
+    contexts: [
+      []
+    ],
 
     get stack() {
       return this.contexts.slice(-1)[0];
     },
 
-    execute: function(index) {
+    execute: function (index) {
       for (let i = this.stack.length - 1; i >= index; i--) {
         if (isNaN(this.stack[i])) { // Checks for operands
           let func = parseOp(this.stack[i]);
@@ -159,7 +166,7 @@ function createStack() {
       return this.stack.slice(-1)[0];
     },
 
-    insert: function(op, arg) {
+    insert: function (op, arg) {
       const index = this.findStackIndex(op);
       this.stack.splice(index, 0, op);
       this.stack.push(arg);
@@ -167,7 +174,7 @@ function createStack() {
       return index;
     },
 
-    findStackIndex: function(op) {
+    findStackIndex: function (op) {
       let index = this.stack.length;
 
       for (let i = this.stack.length - 1; i >= 0; i--) {
@@ -180,24 +187,24 @@ function createStack() {
       return index;
     },
 
-    solve: function(arg) {
+    solve: function (arg) {
       this.stack.push(arg);
       return this.execute(0);
     },
 
-    precedes: function(op1, op2) {
+    precedes: function (op1, op2) {
       return this.getPrecedence(op1) - this.getPrecedence(op2) > 0;
     },
 
-    getPrecedence: function(op) {
+    getPrecedence: function (op) {
       return precedence.findIndex(el => el.includes(op));
     },
 
-    newContext: function() {
+    newContext: function () {
       this.contexts.push([]);
     },
 
-    closeContext: function(arg) {
+    closeContext: function (arg) {
       const result = this.solve(arg);
       this.contexts.pop();
       return result;
