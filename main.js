@@ -2,28 +2,48 @@
 
 const numberKeys = [...document.querySelectorAll('.num')]
 const funcKeys = [...document.querySelectorAll('.op')];
+const brackets = [...document.querySelectorAll('.bracket')];
 const screen = document.querySelector('.screen');
 const equal = document.querySelector('#eq');
-const clear = document.querySelector('#clear');
+const clear = document.querySelector('#c');
+const clearAll = document.querySelector('#ac');
 const precedence = ['+-', '*/', 'q'];
 
 let display = '';
-let stack = [];
+let stack = createStack();
 let needArg = true;
 let isNewArg = true;
 
 addNumberListeners();
 addFuncListeners();
+addBracketListeners();
 addEqListeners();
 addKeyboardShortcuts();
 addClearListeners();
 
 function addClearListeners() {
-  onClick(clear, () => resetState());
+  onClick(clear, () => clean());
+  onClick(clearAll, () => resetState());
 }
 
 function addEqListeners() {
-  onClick(equal, () => operate(null));
+  onClick(equal, () => {
+    display = stack.solve(+display);
+    updateScreen();
+  });
+}
+
+function addBracketListeners() {
+  brackets.forEach(bracket => onClick(bracket, e => {
+    if (e.target.dataset.key == '(') {
+      stack.newContext();
+      clean();
+    } else {
+      isNewArg = true;
+      display = stack.closeContext(+display);
+      updateScreen();
+    }
+  }));
 }
 
 function addNumberListeners() {
@@ -66,8 +86,11 @@ function square(n) {
 }
 
 function operate(op) {
-  execute(insert(op));
+  display = parseOp(op).length == 1 ? parseOp(op)(+display)
+    : stack.execute(stack.insert(op, +display));
+
   isNewArg = true;
+  updateScreen();
 }
 
 function parseOp(op) {
@@ -87,66 +110,22 @@ function parseOp(op) {
   }
 }
 
-function execute(index) {
-  needArg = true;
-  for (let i = stack.length - 1; i >= index; i--) {
-    if (isNaN(stack[i])) {
-      let func = parseOp(stack[i]);
-      let range = func.length + 1;
-
-      if (i == index && range != 2) return;
-
-      if (range == 2) needArg = false;
-
-      stack.splice(i, range,
-        func(...stack.slice(i + 1, i + range)));
-    }
-  }
-}
-
-function insert(op) {
-  let index = findStackIndex(op);
-  stack.splice(index, 0, op);
-  if (needArg) stack.push(+display);
-
-  return index;
-}
-
-function findStackIndex(op) {
-  let prevOpIndex = stack.length;
-
-  for (let i = stack.length - 1; i >= 0; i--) {
-    if (isNaN(stack[i])) {
-      if (compare(op, stack[i]) > 0) break;
-      prevOpIndex = i;
-    }
-  }
-
-  return prevOpIndex;
-}
-
-function compare(op1, op2) {
-  return getPrecedence(op1) - getPrecedence(op2);
-}
-
-function getPrecedence(op) {
-  return precedence.findIndex(el => el.includes(op));
-}
-
 function updateScreen() {
   screen.textContent = display;
 }
 
-function resetState() {
+function clean() {
+  display = '0';
+  isNewArg = true;
+  updateScreen();
+}
 
+function resetState() {
+  stack = createStack();
+  clean();
 }
 
 function newArg(num) {
-  if (!needArg) {
-    stack.pop();
-    needArg = true;
-  }
-
   display = isNewArg ? num : display + num;
 
   isNewArg = false;
@@ -155,4 +134,73 @@ function newArg(num) {
 
 function onClick(elem, func) {
   elem.addEventListener('click', func);
+}
+
+function createStack() {
+  return {
+    contexts: [[]],
+
+    get stack() {
+      return this.contexts.slice(-1)[0];
+    },
+
+    execute: function(index) {
+      for (let i = this.stack.length - 1; i >= index; i--) {
+        if (isNaN(this.stack[i])) { // Checks for operands
+          let func = parseOp(this.stack[i]);
+          let range = func.length + 1; // Number of places it takes on the this.stack
+
+          if (i == index && !this.stack[i + func.length]) break;
+
+          this.stack.splice(i, range,
+            func(...this.stack.slice(i + 1, i + range)));
+        }
+      }
+      return this.stack.slice(-1)[0];
+    },
+
+    insert: function(op, arg) {
+      const index = this.findStackIndex(op);
+      this.stack.splice(index, 0, op);
+      this.stack.push(arg);
+
+      return index;
+    },
+
+    findStackIndex: function(op) {
+      let index = this.stack.length;
+
+      for (let i = this.stack.length - 1; i >= 0; i--) {
+        if (isNaN(this.stack[i])) { // Checks for operands
+          if (this.precedes(op, this.stack[i])) break;
+          index = i;
+        }
+      }
+
+      return index;
+    },
+
+    solve: function(arg) {
+      this.stack.push(arg);
+      return this.execute(0);
+    },
+
+    precedes: function(op1, op2) {
+      return this.getPrecedence(op1) - this.getPrecedence(op2) > 0;
+    },
+
+    getPrecedence: function(op) {
+      return precedence.findIndex(el => el.includes(op));
+    },
+
+    newContext: function() {
+      this.contexts.push([]);
+    },
+
+    closeContext: function(arg) {
+      const result = this.solve(arg);
+      this.contexts.pop();
+      return result;
+    }
+  };
 }
