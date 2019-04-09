@@ -26,11 +26,11 @@ class Operation {
 
 const precedence = ['+-', '*/', 'q'];
 const functions = {
-  '+': new Operation((a, b) => a + b, `+`),
-  '-': new Operation((a, b) => a - b, `-`),
-  '*': new Operation((a, b) => a * b, `*`),
-  '/': new Operation((a, b) => a / b, `/`),
-  'q': new Operation((a) => a * a, (arg) => `${arg}²`),
+  '+': new Operation((a, b) => a + b, `+ `),
+  '-': new Operation((a, b) => a - b, `- `),
+  '*': new Operation((a, b) => a * b, `* `),
+  '/': new Operation((a, b) => a / b, `/ `),
+  'q': new Operation((a) => a * a, (arg) => `${arg}² `),
 };
 
 let display = '';
@@ -38,6 +38,7 @@ let opDisplay = '';
 let stack = createStack();
 let needArg = true;
 let isNewArg = true;
+let lastCall = {};
 
 addListeners();
 
@@ -114,13 +115,19 @@ function addKeyboardShortcuts() {
 
 function operate(op) {
   const func = functions[op].f;
+  
+  if (lastCall.f && lastCall.f.length == 1 && func.length == 1) {
+    const newStr = functions[op].toString(`(${opDisplay.slice(lastCall.index)})`);
+    opDisplay = `${opDisplay.slice(0, lastCall.index)}${newStr}`;
+  } else {
+    lastCall = {f: func, index: opDisplay.length && opDisplay.length-1};
+    opDisplay += functions[op].toString(+display);
+  }
 
-  opDisplay += functions[op].toString(+display);
   
   display = func.length == 1 ? func(+display) :
-    stack.execute(stack.insert(op, +display));
-
-
+  stack.execute(stack.insert(op, +display));
+    
   isNewArg = true;
   updateScreen();
 }
@@ -138,6 +145,8 @@ function clear() {
 
 function resetState() {
   stack = createStack();
+  opDisplay = '';
+  lastCall = {};
   clear();
 }
 
