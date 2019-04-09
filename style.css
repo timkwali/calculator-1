@@ -1,19 +1,59 @@
-.screen {
+html {
+  min-width: 500px;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.display {
   border: 2px solid black;
   font-size: 60px;
   font-weight: bold;
-  margin: 20px 20px;
-  padding: 20px;
+  margin: 20px 20px 5px 20px;
+  width: 498px;
+}
+
+.main-display {
   text-align: right;
 }
 
+.operations-display {
+  font-size: 20px; 
+  height: 20px;
+}
+
 .keyboard {
-  text-align: center;
+  display: flex;
+  flex-direction: row-reverse;
   margin-top: 50px;
 }
 
+.basic {
+  display: grid;
+  grid: repeat(5, 75px) / repeat(5, 100px);
+}
+
+.scientific {
+  display: none;
+  grid: repeat(5, 75px) / repeat(4, 100px);
+  margin: 0 10px;
+}
+
 .key {
+  border: 2px solid white;
   font-size: 2em;
-  height: 50px;
-  width: 80px;
+}
+
+ul {
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
+li {
+  line-height: 0.7em;
+  text-align: center;
 }

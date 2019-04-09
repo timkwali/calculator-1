@@ -2,15 +2,39 @@
 
 const numberKeys = [...document.querySelectorAll('.num')]
 const funcKeys = [...document.querySelectorAll('.op')];
-const brackets = [...document.querySelectorAll('.bracket')];
+const bracketKeys = [...document.querySelectorAll('.bracket')];
 const screen = document.querySelector('.main-display');
-const opDisplay = document.querySelector('.operations-display');
-const equal = document.querySelector('#eq');
-const clear = document.querySelector('#c');
-const clearAll = document.querySelector('#ac');
+const opDisplayBtn = document.querySelector('.operations-display');
+const equalBtn = document.querySelector('#eq');
+const clearBtn = document.querySelector('#c');
+const clearAllBtn = document.querySelector('#ac');
+
+
+class Operation {
+  constructor(f, str) {
+    this.f = f;
+    this.str = str;
+  }
+
+  toString(arg) {
+    if (typeof this.str == 'function') {
+      return this.str(arg);
+    }
+    return `${arg} ${this.str}`;
+  }
+}
+
 const precedence = ['+-', '*/', 'q'];
+const functions = {
+  '+': new Operation((a, b) => a + b, `+`),
+  '-': new Operation((a, b) => a - b, `-`),
+  '*': new Operation((a, b) => a * b, `*`),
+  '/': new Operation((a, b) => a / b, `/`),
+  'q': new Operation((a) => a * a, (arg) => `${arg}²`),
+};
 
 let display = '';
+let opDisplay = '';
 let stack = createStack();
 let needArg = true;
 let isNewArg = true;
@@ -24,27 +48,46 @@ function addListeners() {
   addEqListeners();
   addKeyboardShortcuts();
   addClearListeners();
+  addModeSelectorListeners();
+}
+
+function addModeSelectorListeners() {
+  const basic = document.querySelector('#basic-mode');
+  const scientific = document.querySelector('#scientific-mode');
+
+  onClick(basic, () => {
+    document.querySelector('.scientific').style.display = 'none';
+    document.querySelector('.display').style.width = '498px';
+  });
+
+  onClick(scientific, () => {
+    document.querySelector('.scientific').style.display = 'grid';
+    document.querySelector('.display').style.width = '95%';
+  });
 }
 
 function addClearListeners() {
-  onClick(clear, () => clean());
-  onClick(clearAll, () => resetState());
+  onClick(clearBtn, () => clear());
+  onClick(clearAllBtn, () => resetState());
 }
 
 function addEqListeners() {
-  onClick(equal, () => {
+  onClick(equalBtn, () => {
+    opDisplay += ` ${+display}`;
     display = stack.solve(+display);
     updateScreen();
   });
 }
 
 function addBracketListeners() {
-  brackets.forEach(bracket => onClick(bracket, e => {
+  bracketKeys.forEach(bracket => onClick(bracket, e => {
     if (e.target.dataset.key == '(') {
       stack.newContext();
-      clean();
+      opDisplay += ' (';
+      clear();
     } else {
       isNewArg = true;
+      opDisplay += ` ${+display} )`;
       display = stack.closeContext(+display);
       updateScreen();
     }
@@ -69,57 +112,25 @@ function addKeyboardShortcuts() {
   });
 }
 
-
-function add(a, b) {
-  return a + b;
-}
-
-function subtract(a, b) {
-  return a - b;
-}
-
-function multiply(a, b) {
-  return a * b;
-}
-
-function divide(a, b) {
-  return a / b;
-}
-
-function square(n) {
-  return n * n;
-}
-
 function operate(op) {
-  display = parseOp(op).length == 1 ? parseOp(op)(+display) :
+  const func = functions[op].f;
+
+  opDisplay += functions[op].toString(+display);
+  
+  display = func.length == 1 ? func(+display) :
     stack.execute(stack.insert(op, +display));
+
 
   isNewArg = true;
   updateScreen();
 }
 
-function parseOp(op) {
-  switch (op) {
-    case '+':
-      return add;
-    case '-':
-      return subtract;
-    case '*':
-      return multiply;
-    case '/':
-      return divide;
-    case 'q':
-      return square;
-    default:
-      throw new Error(`Invalid input: ${op}`);
-  }
-}
-
 function updateScreen() {
   screen.textContent = display;
+  opDisplayBtn.textContent = opDisplay;
 }
 
-function clean() {
+function clear() {
   display = '0';
   isNewArg = true;
   updateScreen();
@@ -127,7 +138,7 @@ function clean() {
 
 function resetState() {
   stack = createStack();
-  clean();
+  clear();
 }
 
 function newArg(num) {
@@ -154,7 +165,7 @@ function createStack() {
     execute: function (index) {
       for (let i = this.stack.length - 1; i >= index; i--) {
         if (isNaN(this.stack[i])) { // Checks for operands
-          let func = parseOp(this.stack[i]);
+          let func = functions[this.stack[i]].f;
           let range = func.length + 1; // Number of places it takes on the this.stack
 
           if (i == index && !this.stack[i + func.length]) break;
