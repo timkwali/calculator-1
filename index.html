@@ -11,62 +11,62 @@
 </head>
 
 <body>
-  <main class="calculator">
-    <div class="display">
-      <p class="operations-display"></p>
-      <p class="main-display">0</p>
-    </div>
-    <div class="mutators">
-      <label for="basic-mode">Basic</label>
-      <input type="radio" name="mode" id="basic-mode" checked>
-      <label for="scientific-mode">Scientific</label>
-      <input type="radio" name="mode" id="scientific-mode">
-    </div>
-    <div class="keyboard">
-      <div class="basic">
-        <button id="open-bracket" class="bracket key" data-key="(">(</button>
-        <button id="close-bracket" class="bracket key" data-key=")">)</button>
-        <button id="sqrt" class="op key" data-key="r">√</button>
-        <button id="percent" class="op key" data-key="%">%</button>
-        <button id="delete" class="key" data-key="Backspace">⟸</button>
-        <button id="7" class="num key" data-key='7'>7</button>
-        <button id="8" class="num key" data-key='8'>8</button>
-        <button id="9" class="num key" data-key='9'>9</button>
-        <button id="c" class="key" data-key="Delete">C</button>
-        <button id="ac" class="key" data-key="ctrl+Delete">AC</button>
-        <button id="4" class="num key" data-key='4'>4</button>
-        <button id="5" class="num key" data-key='5'>5</button>
-        <button id="6" class="num key" data-key='6'>6</button>
-        <button id="mul" class="op key" data-key="*">×</button>
-        <button id="div" class="op key" data-key="/">÷</button>
-        <button id="1" class="num key" data-key='1'>1</button>
-        <button id="2" class="num key" data-key='2'>2</button>
-        <button id="3" class="num key" data-key='3'>3</button>
-        <button id="sum" class="op key" data-key="+">+</button>
-        <button id="sub" class="op key" data-key="-">-</button>
-        <button id="0" class="num key" data-key='0'>0</button>
-        <button id="dot" class="num key" data-key=".">.</button>
-        <button id="exp" class="op key" data-key="E">×10 <sup>𝒙</sup></button>
-        <button id="plus-minus" class="op key" data-key="ctrl+-">±</button>
-        <button id="eq" class="key" data-key="Enter">=</button>
+  <main>
+    <div class="calculator">
+      <div class="display">
+        <p class="operations-display"></p>
+        <p class="main-display">0</p>
       </div>
-      <div class="scientific">
-        <button id="ln" class="op key" data-key="N">ln</button>
-        <button id="log" class="op key" data-key="L">log</button>
-        <button id="mod" class="op key" data-key="M">mod</button>
-        <button id="square" class="op key" data-key="Q">𝒙²</button>
-        <button id="sin" class="op key" data-key="s">sin</button>
-        <button id="cos" class="op key" data-key="c">cos</button>
-        <button id="tan" class="op key" data-key="t">tan</button>
-        <button id="power" class="op key" data-key="p">𝒙ⁿ</button>
-        <button id="asin" class="op key" data-key="ctrl+S">sin⁻¹</button>
-        <button id="acos" class="op key" data-key="ctrl+C">cos⁻¹</button>
-        <button id="atan" class="op key" data-key="ctrl+T">tan⁻¹</button>
-        <button id="reciprocal" class="op key" data-key="i">𝒙⁻¹</button>
-        <button id="sinh" class="op key" data-key="S">sinh</button>
-        <button id="cosh" class="op key" data-key="C">cosh</button>
-        <button id="tanh" class="op key" data-key="T">tanh</button>
-        <button id="fact" class="op key" data-key="!">n!</button>
+      <div class="mutators">
+        <button class="basic-mode selected">Basic</button>
+        <button class="scientific-mode">Scientific</button>
+      </div>
+      <div class="keyboard">
+        <div class="basic">
+          <button id="open-bracket" class="bracket key" data-key="(">(</button>
+          <button id="close-bracket" class="bracket key" data-key=")">)</button>
+          <button id="delete" class="key" data-key="Backspace">⟸</button>
+          <button id="c" class="key" data-key="Delete">C</button>
+          <button id="ac" class="key" data-key="ctrl+Delete">AC</button>
+          <button id="7" class="num key" data-key='7'>7</button>
+          <button id="8" class="num key" data-key='8'>8</button>
+          <button id="9" class="num key" data-key='9'>9</button>
+          <button id="sqrt" class="op key" data-key="r">√</button>
+          <button id="percent" class="op key" data-key="%">%</button>
+          <button id="4" class="num key" data-key='4'>4</button>
+          <button id="5" class="num key" data-key='5'>5</button>
+          <button id="6" class="num key" data-key='6'>6</button>
+          <button id="mul" class="op key" data-key="*">×</button>
+          <button id="div" class="op key" data-key="/">÷</button>
+          <button id="1" class="num key" data-key='1'>1</button>
+          <button id="2" class="num key" data-key='2'>2</button>
+          <button id="3" class="num key" data-key='3'>3</button>
+          <button id="sum" class="op key" data-key="+">+</button>
+          <button id="sub" class="op key" data-key="-">-</button>
+          <button id="0" class="num key" data-key='0'>0</button>
+          <button id="dot" class="num key" data-key=".">.</button>
+          <button id="plus-minus" class="op key" data-key="ctrl+-">±</button>
+          <button id="exp" class="op key" data-key="E">×10 <sup>𝒙</sup></button>
+          <button id="eq" class="key" data-key="Enter">=</button>
+        </div>
+        <div class="scientific">
+          <button id="ln" class="op key" data-key="N">ln</button>
+          <button id="log" class="op key" data-key="L">log</button>
+          <button id="mod" class="op key" data-key="M">mod</button>
+          <button id="square" class="op key" data-key="Q">𝒙²</button>
+          <button id="sin" class="op key" data-key="s">sin</button>
+          <button id="cos" class="op key" data-key="c">cos</button>
+          <button id="tan" class="op key" data-key="t">tan</button>
+          <button id="power" class="op key" data-key="p">𝒙ⁿ</button>
+          <button id="asin" class="op key" data-key="ctrl+S">sin⁻¹</button>
+          <button id="acos" class="op key" data-key="ctrl+C">cos⁻¹</button>
+          <button id="atan" class="op key" data-key="ctrl+T">tan⁻¹</button>
+          <button id="reciprocal" class="op key" data-key="i">𝒙⁻¹</button>
+          <button id="sinh" class="op key" data-key="S">sinh</button>
+          <button id="cosh" class="op key" data-key="C">cosh</button>
+          <button id="tanh" class="op key" data-key="T">tanh</button>
+          <button id="fact" class="op key" data-key="!">n!</button>
+        </div>
       </div>
     </div>
   </main>

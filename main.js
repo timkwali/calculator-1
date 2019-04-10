@@ -81,17 +81,19 @@ function addListeners() {
 }
 
 function addModeSelectorListeners() {
-  const basic = document.querySelector('#basic-mode');
-  const scientific = document.querySelector('#scientific-mode');
+  const basic = document.querySelector('.basic-mode');
+  const scientific = document.querySelector('.scientific-mode');
 
   onClick(basic, () => {
     document.querySelector('.scientific').style.display = 'none';
-    document.querySelector('.display').style.width = '498px';
+    basic.classList.toggle('selected', true);
+    scientific.classList.toggle('selected', false);
   });
 
   onClick(scientific, () => {
     document.querySelector('.scientific').style.display = 'grid';
-    document.querySelector('.display').style.width = '95%';
+    scientific.classList.toggle('selected', true);
+    basic.classList.toggle('selected', false);
   });
 }
 
@@ -139,7 +141,11 @@ function addKeyboardShortcuts() {
   document.querySelectorAll('.key').forEach(key => {
     document.addEventListener('keydown', e => {
       let press = e.ctrlKey ? `ctrl+${e.key}` : e.key;
-      if (key.dataset.key == press) key.click();
+      if (key.dataset.key == press) {
+        key.click();
+        key.classList.toggle('key-active', true);
+        setTimeout(() => key.classList.toggle('key-active', false), 100);
+      }
     });
   });
 }
