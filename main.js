@@ -10,9 +10,10 @@ const clearAllBtn = document.querySelector('#ac');
 
 
 class Operation {
-  constructor(f, str) {
+  constructor(f, str, precedence) {
     this.f = f;
     this.str = str;
+    this.precedence = precedence;
   }
 
   toString(arg) {
@@ -23,31 +24,30 @@ class Operation {
   }
 }
 
-const precedence = ['+-', '*/M', '%', 'pE', 'QrnNLsctctrl+tctrl+Cctrl+TSCTi!'];
 const functions = {
-  '+': new Operation((a, b) => a + b, `+ `),
-  '-': new Operation((a, b) => a - b, `- `),
-  '*': new Operation((a, b) => a * b, `* `),
-  '/': new Operation((a, b) => a / b, `/ `),
-  'Q': new Operation((a) => a * a, (arg) => `${arg}² `),
-  'r': new Operation((a) => Math.sqrt(a), (arg) => `√${arg} `),
-  '%': new Operation((a, b) => (b / 100) * a, '% '),
-  'E': new Operation((a, b) => a * Math.pow(10, b), 'e+ '),
-  'n': new Operation((a) => -1 * a, (arg) => `-(${arg})`),
-  'N': new Operation((a) => a * Math.log(a), (arg) => `ln(${arg}) `),
-  'L': new Operation((a) => a * Math.log10(a), (arg) => `log(${arg}) `),
-  'M': new Operation((a, b) => a % b, 'mod '),
-  's': new Operation((a) => Math.sin(a), (arg) => `sin(${arg}) `),
-  'c': new Operation((a) => Math.cos(a), (arg) => `cos(${arg}) `),
-  't': new Operation((a) => Math.tan(a), (arg) => `tan(${arg}) `),
-  'ctrl+S': new Operation((a) => Math.asin(a), (arg) => `sin⁻¹(${arg}) `),
-  'ctrl+C': new Operation((a) => Math.acos(a), (arg) => `cos⁻¹(${arg}) `),
-  'ctrl+T': new Operation((a) => Math.atan(a), (arg) => `tan⁻¹(${arg}) `),
-  'S': new Operation((a) => Math.sinh(a), (arg) => `sinh(${arg}) `),
-  'C': new Operation((a) => Math.cosh(a), (arg) => `cosh(${arg}) `),
-  'T': new Operation((a) => Math.tanh(a), (arg) => `tanh(${arg}) `),
-  'p': new Operation((a, b) => Math.pow(a, b), '^'),
-  'i': new Operation((a) => 1 / a, (arg) => `1/${arg} `),
+  '+': new Operation((a, b) => a + b, `+ `, 0),
+  '-': new Operation((a, b) => a - b, `- `, 0),
+  '*': new Operation((a, b) => a * b, `* `, 1),
+  '/': new Operation((a, b) => a / b, `/ `, 1),
+  'Q': new Operation((a) => a * a, (arg) => `${arg}² `, 4),
+  'r': new Operation((a) => Math.sqrt(a), (arg) => `√${arg} `, 4),
+  '%': new Operation((a, b) => (b / 100) * a, '% ', 2),
+  'E': new Operation((a, b) => a * Math.pow(10, b), 'e+ ', 3),
+  'n': new Operation((a) => -1 * a, (arg) => `-(${arg})`, 4),
+  'N': new Operation((a) => a * Math.log(a), (arg) => `ln(${arg}) `, 4),
+  'L': new Operation((a) => a * Math.log10(a), (arg) => `log(${arg}) `, 4),
+  'M': new Operation((a, b) => a % b, 'mod ', 2),
+  's': new Operation((a) => Math.sin(a), (arg) => `sin(${arg}) `, 4),
+  'c': new Operation((a) => Math.cos(a), (arg) => `cos(${arg}) `, 4),
+  't': new Operation((a) => Math.tan(a), (arg) => `tan(${arg}) `, 4),
+  'ctrl+S': new Operation((a) => Math.asin(a), (arg) => `sin⁻¹(${arg}) `, 4),
+  'ctrl+C': new Operation((a) => Math.acos(a), (arg) => `cos⁻¹(${arg}) `, 4),
+  'ctrl+T': new Operation((a) => Math.atan(a), (arg) => `tan⁻¹(${arg}) `, 4),
+  'S': new Operation((a) => Math.sinh(a), (arg) => `sinh(${arg}) `, 4),
+  'C': new Operation((a) => Math.cosh(a), (arg) => `cosh(${arg}) `, 4),
+  'T': new Operation((a) => Math.tanh(a), (arg) => `tanh(${arg}) `, 4),
+  'p': new Operation((a, b) => Math.pow(a, b), '^', 3),
+  'i': new Operation((a) => 1 / a, (arg) => `1/${arg} `, 4),
   '!': new Operation((a) => {
     if ([0, 1].includes(a)) return 1;
     let fact = 1;
@@ -55,7 +55,7 @@ const functions = {
       fact *= i;
     }
     return fact;
-  }, (arg) => `${arg}! `),
+  }, (arg) => `${arg}! `, 4),
 };
 
 let display = createDisplay();
@@ -215,11 +215,7 @@ function createStack() {
     },
 
     precedes: function (op1, op2) {
-      return this.getPrecedence(op1) - this.getPrecedence(op2) > 0;
-    },
-
-    getPrecedence: function (op) {
-      return precedence.findIndex(el => el.includes(op));
+      return functions[op1].precedence - functions[op2].precedence > 0;
     },
 
     newContext: function () {
