@@ -6,6 +6,7 @@ const bracketKeys = [...document.querySelectorAll('.bracket')];
 const screen = document.querySelector('.main-display');
 const opDisplayBtn = document.querySelector('.operations-display');
 const equalBtn = document.querySelector('#eq');
+const deleteBtn = document.querySelector('#delete');
 const clearBtn = document.querySelector('#c');
 const clearAllBtn = document.querySelector('#ac');
 
@@ -24,13 +25,39 @@ class Operation {
   }
 }
 
-const precedence = ['+-', '*/', 'q'];
+const precedence = ['+-', '*/M', '%','pE','Qrctrl+-NLsctctrl+tctrl+Cctrl+TSCTi!'];
 const functions = {
   '+': new Operation((a, b) => a + b, `+ `),
   '-': new Operation((a, b) => a - b, `- `),
   '*': new Operation((a, b) => a * b, `* `),
   '/': new Operation((a, b) => a / b, `/ `),
-  'q': new Operation((a) => a * a, (arg) => `${arg}² `),
+  'Q': new Operation((a) => a * a, (arg) => `${arg}² `),
+  'r': new Operation((a) => Math.sqrt(a), (arg) => `√${arg} `),
+  '%': new Operation((a, b) => (b / 100) * a, '% '),
+  'E': new Operation((a, b) => a * Math.pow(10, b),'e+ '),
+  'ctrl+-': new Operation((a) => -1 * a, (arg) => `-(${arg})`),
+  'N': new Operation((a) => a * Math.log(a), (arg) => `ln(${arg}) `),
+  'L': new Operation((a) => a * Math.log10(a), (arg) => `log(${arg}) `),
+  'M': new Operation((a, b) => a % b, 'mod '),
+  's': new Operation((a) => Math.sin(a), (arg) => `sin(${arg}) `),
+  'c': new Operation((a) => Math.cos(a), (arg) => `cos(${arg}) `),
+  't': new Operation((a) => Math.tan(a), (arg) => `tan(${arg}) `),
+  'ctrl+S': new Operation((a) => Math.asin(a), (arg) => `sin⁻¹(${arg}) `),
+  'ctrl+C': new Operation((a) => Math.acos(a), (arg) => `cos⁻¹(${arg}) `),
+  'ctrl+T': new Operation((a) => Math.atan(a), (arg) => `tan⁻¹(${arg}) `),
+  'S': new Operation((a) => Math.sinh(a), (arg) => `sinh(${arg}) `),
+  'C': new Operation((a) => Math.cosh(a), (arg) => `cosh(${arg}) `),
+  'T': new Operation((a) => Math.tanh(a), (arg) => `tanh(${arg}) `),
+  'p': new Operation((a, b) => Math.pow(a, b), '^'),  
+  'i': new Operation((a) => 1 / a, (arg) => `1/${arg} `),
+  '!': new Operation((a) => {
+    if ([0,1].includes(a)) return 1;
+    let fact = 1;
+    for(let i=a; i > 1; i--) {
+      fact *= i;
+    }
+    return fact;
+      }, (arg) => `${arg}! `),
 };
 
 let display = '';
@@ -38,6 +65,7 @@ let opDisplay = '';
 let stack = createStack();
 let needArg = true;
 let isNewArg = true;
+let finished = false;
 let lastCall = {};
 
 addListeners();
@@ -70,14 +98,11 @@ function addModeSelectorListeners() {
 function addClearListeners() {
   onClick(clearBtn, () => clear());
   onClick(clearAllBtn, () => resetState());
+  onClick(deleteBtn, () => deleteOne());
 }
 
 function addEqListeners() {
-  onClick(equalBtn, () => {
-    opDisplay += ` ${+display}`;
-    display = stack.solve(+display);
-    updateScreen();
-  });
+  onClick(equalBtn, () => resolve());
 }
 
 function addBracketListeners() {
@@ -97,18 +122,24 @@ function addBracketListeners() {
 
 function addNumberListeners() {
   numberKeys.forEach(key =>
-    onClick(key, e => newArg(e.target.dataset.key)));
+    onClick(key, e => {
+      if (finished) resetState();
+      newArg(e.target.dataset.key)
+    }));
 }
 
 function addFuncListeners() {
-  funcKeys.forEach(key =>
-    onClick(key, e => operate(e.target.dataset.key)));
+  funcKeys.forEach(key => onClick(key, e => {
+    if (finished) resetState();
+    operate(e.target.dataset.key)
+  }));
 }
 
 function addKeyboardShortcuts() {
   document.querySelectorAll('.key').forEach(key => {
     document.addEventListener('keydown', e => {
-      if (key.dataset.key.includes(e.key)) key.click();
+      let press = e.ctrlKey ? `ctrl+${e.key}` : e.key;
+      if (key.dataset.key == press) key.click();
     });
   });
 }
@@ -120,7 +151,7 @@ function operate(op) {
     const newStr = functions[op].toString(`(${opDisplay.slice(lastCall.index)})`);
     opDisplay = `${opDisplay.slice(0, lastCall.index)}${newStr}`;
   } else {
-    lastCall = {f: func, index: opDisplay.length && opDisplay.length-1};
+    lastCall = {f: func, index: opDisplay.length && opDisplay.length-1, op: op};
     opDisplay += functions[op].toString(+display);
   }
 
@@ -146,8 +177,29 @@ function clear() {
 function resetState() {
   stack = createStack();
   opDisplay = '';
+  finished = false;
   lastCall = {};
   clear();
+}
+
+function deleteOne() {
+  if (display.length > 1) {
+    display = display.slice(0, -1);
+  } else {
+    display = 0;
+    isNewArg = true;
+  }
+  updateScreen();
+}
+
+function resolve() {
+  if (finished) resetState();
+  if (!lastCall.f) return;
+  if (lastCall.f.length == 2) opDisplay += `${+display}`;
+  
+  display = stack.solve(+display);
+  updateScreen();
+  finished = true;
 }
 
 function newArg(num) {
@@ -158,7 +210,7 @@ function newArg(num) {
 }
 
 function onClick(elem, func) {
-  elem.addEventListener('click', func);
+  elem.addEventListener('click',func);
 }
 
 function createStack() {
