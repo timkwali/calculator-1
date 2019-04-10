@@ -21,7 +21,7 @@ main {
 }
 
 .operations-display {
-  font-size: 20px; 
+  font-size: 20px;
   height: 20px;
 }
 
@@ -43,7 +43,9 @@ main {
 }
 
 .key {
-  border: 2px solid white;
+  background-color: rgb(40, 40, 40);
+  border: 2px solid orange;
+  color: white;
   font-size: 2em;
 }
 

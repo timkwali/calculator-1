@@ -203,6 +203,7 @@ function resolve() {
 }
 
 function newArg(num) {
+  if (num == '.' && display.includes('.')) return;
   display = isNewArg ? num : display + num;
 
   isNewArg = false;
