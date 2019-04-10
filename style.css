@@ -80,7 +80,7 @@ main {
   outline: none;
 }
 
-.key:hover {
+.key:hover,  #plus-minus:hover {
   border: 2px solid rgb(254, 135, 27);
   color: rgb(254, 135, 27);
 }
