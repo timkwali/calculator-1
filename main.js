@@ -111,7 +111,7 @@ function addNumberListeners() {
   numberKeys.forEach(key =>
     onClick(key, e => {
       if (display.finished) resetState();
-      display.newArg(e.target.dataset.key)
+      display.result = { num: e.target.dataset.key };
     }));
 }
 
@@ -176,10 +176,11 @@ function createStack() {
     execute: function (index) {
       for (let i = this.stack.length - 1; i >= index; i--) {
         if (isNaN(this.stack[i])) { // Checks for operands
-          let func = functions[this.stack[i]].f;
-          let range = func.length + 1; // Number of places it takes on the this.stack
+          const func = functions[this.stack[i]].f;
+          const range = func.length + 1; // Number of places it takes on the this.stack
+          const notEnoughArgs = i == index && !this.stack[i + func.length];
 
-          if (i == index && !this.stack[i + func.length]) break;
+          if (notEnoughArgs) break;
 
           this.stack.splice(i, range,
             func(...this.stack.slice(i + 1, i + range)));
@@ -235,10 +236,19 @@ function createDisplay() {
     resultElem: document.querySelector('.main-display'),
     operationsElem: document.querySelector('.operations-display'),
     operations: '',
-    result: '0',
-    isNewArg: true,
     finished: false,
     lastCall: {},
+    
+    get result() { return this._result.num },
+
+    set result({num = '0', update }) {
+      if(!this._result) this._result = { num: num, update: update || true };
+      if (num == '.' && this._result.num.includes('.')) return;
+
+      const needsUpdate = update || this._result.update || false;
+      this._result = { num: needsUpdate ? num : this._result.num + num, update: update || false };
+      this.updateScreen();
+    },
 
     add(funcObj, op, res) {
       if (this.lastCall.f && this.lastCall.f.length == 1 && funcObj.f.length == 1) {
@@ -256,9 +266,7 @@ function createDisplay() {
           ? funcObj.toString('') : funcObj.toString(this.result);
       }
 
-      this.result = res;
-      this.isNewArg = true;
-      this.updateScreen();
+      this.result = { num: res, update: true };
     },
 
     resolve(resolver) {
@@ -268,8 +276,7 @@ function createDisplay() {
         display.operations.slice(-1) != ')') this.operations += `${+this.result}`;
 
       display.operations += ' =';
-      this.result = resolver(+this.result);
-      this.updateScreen();
+      this.result = { num: resolver(+this.result) , update: true };
       this.finished = true;
     },
 
@@ -279,39 +286,21 @@ function createDisplay() {
     },
 
     closeBracket(arg, res) {
-      this.isNewArg = true;
       this.operations += ` ${+arg} )`;
-      this.result = res;
-      this.updateScreen();
-    },
-
-    newArg(num) {
-      if (num == '.' && this.result.includes('.')) return;
-      this.result = this.isNewArg ? num : this.result + num;
-
-      this.isNewArg = false;
-      this.updateScreen();
+      this.result = { num: res, update: true };
     },
 
     clear() {
-      this.result = '0';
-      this.isNewArg = true;
-      this.updateScreen();
+      this.result = { update: true };
     },
 
     deleteOne() {
-      if (this.result.length > 1) {
-        this.result = this.result.slice(0, -1);
-      } else {
-        this.result = 0;
-        this.isNewArg = true;
-      }
-      this.updateScreen();
+      const newNum =  this.result.slice(0, -1) || '0';
+      this.result = { num: newNum, update: this.result.length < 1 };
     },
 
     reset() {
-      [this.operations, this.result, this.lastCall, this.isNewArg, this.finished] = ['', 0, {}, true, false];
-      this.updateScreen();
+      [this.operations, this.result, this.lastCall, this.finished] = ['', { update: true }, {}, false];
     },
 
     updateScreen() {
