@@ -109,17 +109,11 @@ function addBracketListeners() {
 
 function addNumberListeners() {
   numberKeys.forEach(key =>
-    onClick(key, e => {
-      if (display.finished) resetState();
-      display.result = { num: e.target.dataset.key };
-    }));
+    onClick(key, e => display.result = { num: e.target.dataset.key }));
 }
 
 function addFuncListeners() {
-  funcKeys.forEach(key => onClick(key, e => {
-    if (display.finished) resetState();
-    operate(e.target.dataset.key)
-  }));
+  funcKeys.forEach(key => onClick(key, e =>operate(e.target.dataset.key)));
 }
 
 function addKeyboardShortcuts() {
@@ -154,11 +148,10 @@ function operate(op) {
   const result = funcObj.f.length == 1 ? funcObj.f(+display.result) :
     stack.execute(stack.insert(op, +display.result));
 
-  display.add(funcObj, op, result);
+  display.add(funcObj, result);
 }
 
 function resetState() {
-
   stack = createStack();
   display.reset();
 }
@@ -236,8 +229,7 @@ function createDisplay() {
     resultElem: document.querySelector('.main-display'),
     operationsElem: document.querySelector('.operations-display'),
     operations: '',
-    finished: false,
-    lastCall: {},
+    caretInfo: {},
     
     get result() { return this._result.num },
 
@@ -250,34 +242,38 @@ function createDisplay() {
       this.updateScreen();
     },
 
-    add(funcObj, op, res) {
-      if (this.lastCall.f && this.lastCall.f.length == 1 && funcObj.f.length == 1) {
-        const newStr = funcObj.toString(`(${this.operations.slice(this.lastCall.index)})`);
-        this.operations = `${this.operations.slice(0, this.lastCall.index)}${newStr}`;
-      } else {
-        const previousArity = this.lastCall.f ? this.lastCall.f.length : -1;
-        this.lastCall = {
-          f: funcObj.f,
-          index: this.operations.length && this.operations.length - 1,
-          op: op
-        };
+    add(funcObj, res) {
+      const previousArity = this.caretInfo.f ? this.caretInfo.f.length : -1;
+      const arity = funcObj.f.length;
 
-        this.operations += previousArity == 1 && funcObj.f.length == 2 
-          ? funcObj.toString('') : funcObj.toString(this.result);
-      }
+      this.operations = previousArity == 1
+        ? arity == 1 ? this.wrapLast(funcObj) : this.append(funcObj, '')
+        : this.append(funcObj, this.result); 
 
       this.result = { num: res, update: true };
     },
 
+    wrapLast(funcObj) {
+      const newStr = funcObj.toString(`(${this.operations.slice(this.caretInfo.index)})`);
+      return `${this.operations.slice(0, this.caretInfo.index)}${newStr}`;
+    },
+
+    append(funcObj, str) {
+      this.caretInfo = {
+        f: funcObj.f,
+        index: this.operations.length && this.operations.length - 1 
+      };
+
+       return this.operations + funcObj.toString(str);
+    },
+
     resolve(resolver) {
-      if (this.finished) resetState();
-      if (!this.lastCall.f) return;
-      if (this.lastCall.f.length == 2 &&
+      if (!this.caretInfo.f) return;
+      if (this.caretInfo.f.length == 2 &&
         display.operations.slice(-1) != ')') this.operations += `${+this.result}`;
 
-      display.operations += ' =';
+      display.operations += ' = ';
       this.result = { num: resolver(+this.result) , update: true };
-      this.finished = true;
     },
 
     openBracket() {
@@ -296,11 +292,12 @@ function createDisplay() {
 
     deleteOne() {
       const newNum =  this.result.slice(0, -1) || '0';
-      this.result = { num: newNum, update: this.result.length < 1 };
+      this._result.update = true; // Ensures old string is removed
+      this.result = { num: newNum, update: this.result.length <= 1 };
     },
 
     reset() {
-      [this.operations, this.result, this.lastCall, this.finished] = ['', { update: true }, {}, false];
+      [this.operations, this.result, this.caretInfo] = ['', {update: true}, {}];
     },
 
     updateScreen() {
