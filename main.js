@@ -245,10 +245,11 @@ function createDisplay() {
     set result({num = '0', update }) {
       if(!this._result) this._result = { num: '0', update: update || true };
       if (num == '.' && this.result.toString().includes('.')) return;
-
+      
       const needsUpdate = update || this._result.update || false;
       this._result = { num: needsUpdate ? num : this._result.num + num, update: update || false };
       this.updateScreen();
+      if(this.operations.slice(-2) == '= ') this.operations = '';
     },
 
     add(funcObj, res) {
@@ -281,8 +282,8 @@ function createDisplay() {
       if (this.caretInfo.f.length == 2 &&
         display.operations.slice(-1) != ')') this.operations += `${this.formatNum(this.result)}`;
 
-      display.operations += ' = ';
-      this.result = { num: resolver(this.formatNum(this.result)) , update: true };
+        display.operations += ' = ';
+        this.result = { num: resolver(this.formatNum(this.result)) , update: true };
     },
 
     formatNum(num) {
