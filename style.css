@@ -1,3 +1,7 @@
+:root {
+  --display-width: 500px;
+}
+
 body {
   text-align: center;
 }
@@ -25,12 +29,18 @@ main {
 }
 
 .main-display {
+  padding: 4px;
+  overflow: auto;
   text-align: right;
+  max-width: var(--display-width);
 }
 
 .operations-display {
   font-size: 20px;
   height: 20px;
+  overflow: auto;
+  padding: 4px;
+  max-width: var(--display-width);
 }
 
 .mutators {

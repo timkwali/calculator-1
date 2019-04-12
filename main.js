@@ -62,6 +62,7 @@ let display = createDisplay();
 let stack = createStack();
 
 addListeners();
+addTooltips();
 
 function addListeners() {
   addNumberListeners();
@@ -81,12 +82,14 @@ function addModeSelectorListeners() {
     document.querySelector('.scientific').style.display = 'none';
     basic.classList.toggle('selected', true);
     scientific.classList.toggle('selected', false);
+    document.documentElement.style.setProperty('--display-width', '500px');
   });
-
+  
   onClick(scientific, () => {
     document.querySelector('.scientific').style.display = 'grid';
     scientific.classList.toggle('selected', true);
     basic.classList.toggle('selected', false);
+    document.documentElement.style.setProperty('--display-width', '900px');
   });
 }
 
@@ -130,6 +133,12 @@ function addKeyboardShortcuts() {
   });
 }
 
+function addTooltips() {
+  document.querySelectorAll('.key').forEach(key => {
+   key.setAttribute('title',  `Press ${key.dataset.key}`);
+  });
+}
+
 function onClick(elem, func) {
   elem.addEventListener('click', func);
 }
@@ -145,8 +154,8 @@ function closeBracket() {
 
 function operate(op) {
   const funcObj = functions[op];
-  const result = funcObj.f.length == 1 ? funcObj.f(+display.result) :
-    stack.execute(stack.insert(op, +display.result));
+  const result = funcObj.f.length == 1 ? funcObj.f(display.formatNum(display.result)) 
+    : stack.execute(stack.insert(op, display.formatNum(display.result)));
 
   display.add(funcObj, result);
 }
@@ -234,8 +243,8 @@ function createDisplay() {
     get result() { return this._result.num },
 
     set result({num = '0', update }) {
-      if(!this._result) this._result = { num: num, update: update || true };
-      if (num == '.' && this._result.num.includes('.')) return;
+      if(!this._result) this._result = { num: '0', update: update || true };
+      if (num == '.' && this.result.toString().includes('.')) return;
 
       const needsUpdate = update || this._result.update || false;
       this._result = { num: needsUpdate ? num : this._result.num + num, update: update || false };
@@ -248,9 +257,9 @@ function createDisplay() {
 
       this.operations = previousArity == 1
         ? arity == 1 ? this.wrapLast(funcObj) : this.append(funcObj, '')
-        : this.append(funcObj, this.result); 
+        : this.append(funcObj, this.formatNum(this.result)); 
 
-      this.result = { num: res, update: true };
+      this.result = { num: this.formatNum(res), update: true };
     },
 
     wrapLast(funcObj) {
@@ -270,10 +279,14 @@ function createDisplay() {
     resolve(resolver) {
       if (!this.caretInfo.f) return;
       if (this.caretInfo.f.length == 2 &&
-        display.operations.slice(-1) != ')') this.operations += `${+this.result}`;
+        display.operations.slice(-1) != ')') this.operations += `${this.formatNum(this.result)}`;
 
       display.operations += ' = ';
-      this.result = { num: resolver(+this.result) , update: true };
+      this.result = { num: resolver(this.formatNum(this.result)) , update: true };
+    },
+
+    formatNum(num) {
+      return parseFloat((+num).toFixed(5));
     },
 
     openBracket() {
